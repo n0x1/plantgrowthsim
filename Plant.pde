@@ -8,9 +8,9 @@ class Plant {
     x = startX;
     this.stemHeight = stemHeight;
     growthStage = 0;
-    growthRate = int(random(60,120)); // Interval (frames) between calling grow()
-    nutrientLevel = 100;
-    waterLevel = 100;
+    growthRate = int(random(60,150)); // Interval (frames) between calling grow(); Each second is ~1 day
+    nutrientLevel = int(random(45,60)); // Random values account for different kinds of seeds
+    waterLevel = 50;
     isShaded = false; // under shade of another plant
     isAlive = true;
     stemParts = new ArrayList<>(); // Initialize the array
@@ -18,31 +18,33 @@ class Plant {
   
   void addStemPart() {
     if (growthStage < floor(height / stemHeight) - 1) {
-      PShape stemPart = createShape(RECT, 0, 0, 5, stemHeight); // https://processing.org/reference/createShape_.html
+      // Learned about PShape class:
+      // https://processing.org/reference/PShape.html
+      PShape stemPart = createShape(RECT, 0, 0, 5, stemHeight); 
       stemPart.setFill(color(90, 158, 95)); // Green fill
       shape(stemPart, x, height - (stemParts.size() + 1) * stemHeight); // positions next plant part
       stemParts.add(stemPart);
       growthStage += 1;
-      nutrientLevel -= 10;
+      nutrientLevel -= 15;
     }
   }
   
   void photosynthesize() {
-    if (waterLevel > 20 && !isShaded) {
-      waterLevel -= 20;
+    if (waterLevel > 25 && !isShaded) {
+      waterLevel -= 25; 
       nutrientLevel += 10;
-    }
+    } 
   }
-
-  void flipShadedState() { // shaded only when a neighboring plant 
-    isShaded = !isShaded;
+  
+  void absorbWater() {
+    waterLevel += int(random(15,25)); // random accounts for varying levels of rainfall
   }
   
   void checkLiving() {
-    if (isAlive == true && (waterLevel <= 5 || nutrientLevel <= 5)) {
+    if (isAlive == true && (waterLevel < 10 || nutrientLevel < 10)) {
       isAlive = false; 
+      print("plant has died");
       stemParts.clear(); // clear the array
-      background(149, 181, 232);
     }
   }
     
@@ -50,9 +52,10 @@ class Plant {
   
   
   void update() {
-    if (frameCount % growthRate == 0) { // only grow every at growthRate multiples
-      addStemPart();
-      checkLiving();
+    if (frameCount % growthRate == 0 && isAlive == true) { // only grow every at growthRate multiples
+      photosynthesize(); // use water, if not shaded, to get nutrients
+      addStemPart(); // use nutrients to add part
+      checkLiving(); // ensure plant's nutrients are not fully depleted
     }
   }
   
